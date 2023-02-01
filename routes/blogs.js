@@ -1,5 +1,6 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+
 
 const sampleBlogs = [
     {
@@ -50,5 +51,27 @@ router.get('/', function(req, res, next) {
   res.json({success: true, route: "blogs"})
 
 });
+
+router.get('/all',(req, res) => {
+    res.json({success: true, blogs: sampleBlogs});
+})
+
+router.get('/single/:blogTitleToGet', (req, res) => {
+    const foundBlog = sampleBlogs.find((blog)=>{
+        return blog.title === req.params.blogTitleToGet
+    })
+    res.json({success:  true, foundBlog: foundBlog})
+})
+
+router.delete('/single/delete-blog/:titleToDelete', (req, res) =>{
+    const blogTitleToDelete = req.params.titleToDelete
+
+    const indexOfBlog = sampleBlogs.findIndex((blog) => {
+        return blog.title === blogTitleToDelete
+    })
+    sampleBlogs.splice(indexOfBlog, 1)
+
+    res.json({success:true})
+})
 
 module.exports = router;
