@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
+let {validateBlogData} = require("../validation/blogs");
 
-const sampleBlogs = [
+// const blogList = [];
+
+
+const blogList = [
     {
           title: "dicta",
       text: "Iusto et in et. Nulla accusantium fugit. Et qui dolorem inventore soluta et veritatis. Aut ut aut non laudantium eveniet suscipit odit. Sapiente sint nihil nihil sit et molestias. In nisi omnis quas et sed aut minus aperiam ea.\n \rLaudantium quo quisquam quae. Et et quas officia perspiciatis iusto sunt sunt eaque. Quidem sit voluptas deserunt sequi magni.\n \rEst est facere cumque ipsam omnis animi. Voluptatem magnam officiis architecto possimus. Quia similique aut eos qui. Quasi quae sed aliquam.",
@@ -45,7 +49,7 @@ const sampleBlogs = [
     },
   ];
 
-/* GET users listing. */
+/* GET blog listing. */
 router.get('/', function(req, res, next) {
 //   res.send('blogs page');
   res.json({success: true, route: "blogs"})
@@ -53,25 +57,80 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/all',(req, res) => {
-    res.json({success: true, blogs: sampleBlogs});
+    res.json({success: true, blogs: blogList});
 })
 
 router.get('/single/:blogTitleToGet', (req, res) => {
-    const foundBlog = sampleBlogs.find((blog)=>{
+    const foundBlog = blogList.find((blog)=>{
         return blog.title === req.params.blogTitleToGet
     })
     res.json({success:  true, foundBlog: foundBlog})
 })
 
-router.delete('/single/delete-blog/:titleToDelete', (req, res) =>{
+router.delete('/single/:titleToDelete', (req, res) =>{
     const blogTitleToDelete = req.params.titleToDelete
 
-    const indexOfBlog = sampleBlogs.findIndex((blog) => {
+    const indexOfBlog = blogList.findIndex((blog) => {
         return blog.title === blogTitleToDelete
     })
-    sampleBlogs.splice(indexOfBlog, 1)
+    blogList.splice(indexOfBlog, 1)
 
     res.json({success:true})
 })
 
+router.post("/create-one", (req, res) => {
+    //use try block, for validation code
+    try {
+  
+      //anticipating fields of the post request /create-one
+      //parse out request data to local variables
+      const title = req.body.title;
+      const text = req.body.text;
+      const author = req.body.author;
+      const category = req.body.category;
+      
+  
+      //create userData object fields:
+      const blogData = {
+        title, 
+        text,
+        author,
+        category,
+        creaatedAt: new Date(),
+        lastModified: new Date()
+      };
+  
+      //pass blog data object to our validate function
+      const blogDataCheck = validateBlogData(blogData);
+  
+      if (blogDataCheck.isValid === false) {
+        throw Error(blogDataCheck.message)
+  
+        //res.json({
+        //   success: false,
+        //   message: userDataCheck.message,
+        // });
+        // return;
+      }
+  
+      blogList.push(blogData);
+  
+      console.log("blogList ", blogList);
+  
+      res.json({
+        success: true,
+      });
+    } catch (e){
+        //In the catch block, we always want to do 2 things: 1. console.log the error and 2. respond with an error object
+        console.log(e);
+        res.json({
+          success: false, 
+          error: String(e)
+        });
+    }
+  });
+
+// module.exports = {
+//     validateBlogData
+// }
 module.exports = router;
